@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dossier Patient: {{ patient.prenom }} {{ patient.nom }}{% endblock %}
+
+{% block page_title_header %}Dossier Patient{% endblock %}
+
+{% block head_extra %}
+<style>
+    .detail-page-wrapper { padding: 25px; }
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+     .detail-header h1 {
+        margin: 0;
+        color: var(--text-primary);
+     }
+    .detail-actions .btn {
+        margin-left: 10px;
+        background-color: var(--accent-primary);
+        color: white;
+        padding: 8px 15px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        display: inline-block;
+        font-size: 0.9em;
+    }
+     .detail-actions .btn-edit { background-color: #ffc107; color: black; }
+     .detail-actions .btn-consultation { background-color: #28a745; }
+     .detail-actions .btn-delete { background-color: #dc3545; }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2 colonnes */
+        gap: 25px;
+    }
+    .detail-card {
+      background-color: var(--card-bg);
+      padding: 20px 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .detail-card h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      font-size: 1.1em;
+      font-weight: 600;
+    }
+    /* Style pour Definition List */
+    .detail-card dl dt {
+        float: left;
+        width: 180px; /* Largeur fixe pour les labels */
+        font-weight: 500;
+        color: var(--text-secondary);
+        padding: 4px 0;
+    }
+    .detail-card dl dd {
+       margin-left: 200px; /* Doit être > width de dt */
+       font-weight: 500;
+       color: var(--text-primary);
+       padding: 4px 0;
+    }
+    /* Styles pour les listes (consultations etc)*/
+    .related-list { list-style: none; padding: 0; }
+    .related-list li {
+        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-between;
+    }
+     .related-list li:last-child { border-bottom: none; }
+
+    /* Responsive pour les écrans plus petits */
+     @media (max-width: 900px) {
+        .detail-grid {
+             grid-template-columns: 1fr; /* 1 seule colonne */
+        }
+     }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-page-wrapper">
+
+    <div class="detail-header">
+       <div>
+        <a href="{% url 'patient_list' %}" class="btn-back" title="Retour à la liste des patients">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+           <h1>{{ patient.prenom }} {{ patient.nom }}</h1>
+            <span style="color: var(--text-secondary);">Code: {{ patient.code|default:"N/A" }}</span>
+       </div>
+        <div class="detail-actions">
+             {% if perms.gestion_clinique.add_consultation %}
+                 <a href="{% url 'consultation_add_for_patient' patient.pk %}" class="btn btn-consultation">
+                   <i class="fas fa-notes-medical"></i> Nouvelle Consultation
+                 </a>
+             {% endif %}
+             {% if perms.gestion_clinique.change_patient %}
+                 <a href="{% url 'patient_edit' patient.pk %}" class="btn btn-edit">
+                   <i class="fas fa-edit"></i> Modifier
+                 </a>
+             {% endif %}
+               {# Ajoutez ici le formulaire pour le bouton de suppression si vous le souhaitez #}
+        </div>
+    </div>
+
+    <div class="detail-grid">
+
+        <!-- Carte Informations Démographiques -->
+        <div class="detail-card">
+            <h3>Informations Personnelles</h3>
+             <dl>
+                <dt>Nom complet</dt>
+                <dd>{{ patient.nom }} {{ patient.prenom }}</dd>
+
+                <dt>Date de Naissance</dt>
+                <dd>{{ patient.date_naissance|date:"d F Y"|default:"N/A" }}</dd>
+
+                 <dt>Sexe</dt>
+                <dd>{{ patient.civilite|default:"N/A" }}</dd>
+
+                 <dt>Téléphone</dt>
+                <dd>{{ patient.telephone|default:"N/A" }}</dd>
+
+                 <dt>Email</dt>
+                <dd>{{ patient.email|default:"N/A" }}</dd>
+
+                <dt>Adresse</dt>
+                <dd>{{ patient.adresse|linebreaksbr|default:"N/A" }}</dd>
+             </dl>
+        </div>
+
+         <!-- Carte Informations Médicales -->
+         <div class="detail-card">
+              <h3>Informations Médicales</h3>
+             <dl>
+                <dt>N° Assurance Maladie</dt>
+                <dd>{{ patient.numero_assurance_maladie|default:"N/A" }}</dd>
+
+                <dt>Groupe Sanguin</dt>
+                <dd>{{ patient.groupe_sanguin|default:"N/A" }}</dd>
+
+                {# Ajoutez d'autres champs médicaux pertinents ici #}
+                <dt>Allergies Connues</dt>
+                <dd>{{ patient.allergies|linebreaksbr|default:"Aucune connue" }}</dd>
+             </dl>
+        </div>
+
+         <!-- Carte Historique Consultations -->
+        <div class="detail-card" style="grid-column: 1 / -1;">
+            <h3>Historique des Consultations</h3>
+             {% if consultations_patient %}
+                <ul class="related-list">
+                {% for consult in consultations_patient %}
+                    <li>
+                        <div>
+                           <strong>{{ consult.date_consultation|date:"d/m/Y" }}</strong> -
+                           <span style="color: var(--text-secondary)">Motif:</span> {{ consult.motif|truncatewords:10 }}
+                        </div>
+                         <a href="#">Voir détail</a> 
+                    </li>
+                {% endfor %}
+                </ul>
+             {% else %}
+                 <p>Aucune consultation enregistrée pour ce patient.</p>
+             {% endif %}
+        </div>
+         <div class="detail-card" style="grid-column: 1 / -1;">
+            <h3>Prochains Rendez-vous</h3>
+            <p>(Liste des rendez-vous à venir ici)</p>
+         </div>
+
+    </div>
+
+</div>
+{% endblock %}

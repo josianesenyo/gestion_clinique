@@ -1,0 +1,5 @@
+<h2>Bienvenue {{ user.username }} !</h2>
+<form method="POST" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Se déconnecter</button>
+</form>

@@ -1,0 +1,161 @@
+{% extends "base.html" %} {# Assurez-vous que base.html est au bon endroit, ex: templates/base.html #}
+{% load static %}
+{# {% load crispy_forms_tags %} Si vous prévoyez d'utiliser Django Crispy Forms pour un meilleur rendu #}
+
+{% block title %}
+    {% if form.instance.pk %}Modifier Patient{% else %}Ajouter un Nouveau Patient{% endif %} - GESTCAB
+{% endblock %}
+
+{% block page_title_header %}
+    {% if form.instance.pk %}Modifier Patient : {{ form.instance.prenom }} {{ form.instance.nom }}{% else %}Ajouter un Nouveau Patient{% endif %}
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    .form-container {
+        max-width: 800px; /* Augmenté un peu la largeur */
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        padding: 25px 30px; /* Ajusté le padding */
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Ombre un peu plus prononcée */
+    }
+    .form-container h2 {
+        color: var(--text-primary);
+        margin-bottom: 5px;
+    }
+    .form-container .form-description {
+        font-size: 0.95em;
+        color: var(--text-secondary);
+        margin-bottom: 25px;
+    }
+
+    .form-field-wrapper {
+        margin-bottom: 20px; /* Espacement entre les champs */
+    }
+    .form-field-wrapper label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 0.9em;
+    }
+    /* Styles de base pour les inputs, adaptez selon vos besoins ou si vous utilisez un framework CSS */
+    .form-field-wrapper input[type="text"],
+    .form-field-wrapper input[type="email"],
+    .form-field-wrapper input[type="tel"],
+    .form-field-wrapper input[type="date"],
+    .form-field-wrapper input[type="number"],
+    .form-field-wrapper select,
+    .form-field-wrapper textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        box-sizing: border-box; /* Important pour que padding et border n'augmentent pas la largeur totale */
+        font-size: 0.95em;
+        background-color: #fff;
+    }
+    .form-field-wrapper input:focus,
+    .form-field-wrapper select:focus,
+    .form-field-wrapper textarea:focus {
+        border-color: var(--accent-primary);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+    }
+
+    .error-message {
+        color: #dc3545; /* Rouge pour les erreurs */
+        font-size: 0.85em;
+        margin-top: 4px;
+    }
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px 15px;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .form-actions {
+        margin-top: 30px;
+        text-align: right;
+        border-top: 1px solid var(--border-color);
+        padding-top: 20px;
+    }
+    .form-actions .btn {
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+    }
+    .form-actions .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        margin-right: 10px;
+    }
+    .form-actions .btn-primary {
+        background-color: var(--accent-primary);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="padding: 25px;">
+    <div class="form-container">
+        <h2>
+            {% if form.instance.pk %}
+                Modifier les informations du patient
+            {% else %}
+                Enregistrer un nouveau patient
+            {% endif %}
+        </h2>
+        <p class="form-description">
+            {% if form.instance.pk %}
+                Mettez à jour les détails ci-dessous.
+            {% else %}
+                Veuillez remplir les informations du nouveau patient. Les champs marqués d'un * sont obligatoires.
+            {% endif %}
+        </p>
+
+        <form method="post" enctype="multipart/form-data"> {# enctype si votre formulaire PatientForm a des champs de type FileField #}
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {# Boucle pour afficher les champs du formulaire #}
+            {% for field in form %}
+                <div class="form-field-wrapper">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}*{% endif %}
+                    </label>
+                    {{ field }} {# Django rend le widget approprié #}
+                    {% if field.help_text %}
+                        <small style="display: block; color: #6c757d; font-size: 0.85em; margin-top: 3px;">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <a href="{% if form.instance.pk %}{% url 'patient_detail' form.instance.pk %}{% else %}{% url 'patient_list' %}{% endif %}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if form.instance.pk %}Mettre à jour{% else %}Enregistrer Patient{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

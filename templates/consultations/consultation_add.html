@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Nouvelle Consultation - {{ patient.prenom }} {{ patient.nom }}
+{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Nouvelle consultation pour : <strong>{{ patient.prenom }} {{ patient.nom }}</strong></h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info small" role="alert">
+                        <p class="mb-1"><strong>Patient :</strong> {{ patient.prenom }} {{ patient.nom }}</p>
+                        <p class="mb-1"><strong>Médecin traitant :</strong> {{ request.user.get_full_name|default:request.user.username }} (automatique)</p>
+                        <p class="mb-1"><strong>Date de consultation :</strong> Sera la date et l'heure actuelles (automatique)</p>
+                        <p class="mb-0"><strong>Enregistré par :</strong> {{ request.user.get_full_name|default:request.user.username }} (automatique)</p>
+                    </div>
+
+                    <form method="post" action="{% url 'consultation_add_for_patient' pk=patient.pk %}" novalidate>
+                        {% csrf_token %}
+
+                        {# Affichage des erreurs non liées à un champ spécifique (non_field_errors) #}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger py-2">
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {# Affichage des champs du formulaire - Utilisez form.as_p pour la robustesse initiale #}
+                        {# Si cela fonctionne, vous pourrez ensuite personnaliser l'affichage champ par champ si nécessaire #}
+                        {{ form.as_p }}
+
+                        <hr class="my-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'patient_detail' pk=patient.pk %}" class="btn btn-outline-secondary">Annuler</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Enregistrer la consultation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

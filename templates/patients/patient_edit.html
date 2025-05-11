@@ -1,0 +1,121 @@
+{% extends "base.html" %} {# Assurez-vous que base.html est au bon endroit, ex: templates/base.html #}
+{% load static %}
+{# {% load crispy_forms_tags %} Si vous prévoyez d'utiliser Django Crispy Forms #}
+
+{% block title %}Modifier Patient: {{ patient.prenom }} {{ patient.nom }} - GESTCAB{% endblock %}
+
+{% block page_title_header %}Modifier Patient : {{ patient.prenom }} {{ patient.nom }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* Copiez les styles de patient_form.html ici ou mettez-les dans un CSS global */
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        padding: 25px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .form-container h2 {
+        color: var(--text-primary);
+        margin-bottom: 5px;
+    }
+    .form-container .form-description {
+        font-size: 0.95em;
+        color: var(--text-secondary);
+        margin-bottom: 25px;
+    }
+    .form-field-wrapper { margin-bottom: 20px; }
+    .form-field-wrapper label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 0.9em;
+    }
+    .form-field-wrapper input[type="text"],
+    .form-field-wrapper input[type="email"],
+    .form-field-wrapper input[type="tel"],
+    .form-field-wrapper input[type="date"],
+    .form-field-wrapper input[type="number"],
+    .form-field-wrapper select,
+    .form-field-wrapper textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 0.95em;
+        background-color: #fff;
+    }
+    .form-field-wrapper input:focus,
+    .form-field-wrapper select:focus,
+    .form-field-wrapper textarea:focus {
+        border-color: var(--accent-primary);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+    }
+    .error-message { color: #dc3545; font-size: 0.85em; margin-top: 4px; }
+    .alert-danger {
+        background-color: #f8d7da; color: #721c24; padding: 10px 15px;
+        border: 1px solid #f5c6cb; border-radius: 5px; margin-bottom: 20px;
+    }
+    .form-actions {
+        margin-top: 30px; text-align: right;
+        border-top: 1px solid var(--border-color); padding-top: 20px;
+    }
+    .form-actions .btn {
+        padding: 10px 20px; text-decoration: none; border-radius: 5px;
+        font-weight: 500; cursor: pointer; border: none;
+    }
+    .form-actions .btn-secondary { background-color: #6c757d; color: white; margin-right: 10px; }
+    .form-actions .btn-primary { background-color: var(--accent-primary); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="padding: 25px;">
+    <div class="form-container">
+        <h2>Modifier les informations du patient</h2>
+        <p class="form-description">
+            Mettez à jour les détails pour <strong>{{ patient.prenom }} {{ patient.nom }}</strong>. Les champs marqués d'un * sont obligatoires.
+        </p>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {# Boucle pour afficher les champs du formulaire #}
+            {% for field in form %}
+                <div class="form-field-wrapper">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}*{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small style="display: block; color: #6c757d; font-size: 0.85em; margin-top: 3px;">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                {# Le lien Annuler retourne à la page de détail du patient en cours de modification #}
+                <a href="{% url 'patient_detail' patient.pk %}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Mettre à jour les informations</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

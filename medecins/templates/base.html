@@ -1,0 +1,254 @@
+{% load static %}
+{# {% load custom_tags %} Si vous avez des tags personnalisés à utiliser #}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GESTCAB - Cabinet Médical{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-bg: #F0F4F7;
+            --main-bg: #F8FAFC;
+            --text-primary: #2c3e50;
+            --text-secondary: #5a6a7a;
+            --accent-primary: #007bff;
+            --active-nav-bg: #dceefc;
+            --active-nav-text: var(--accent-primary);
+            --active-nav-border: #E91E63;
+            --border-color: #e0e6ed;
+        }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--main-bg);
+            color: var(--text-primary);
+            display: flex; /* Pour layout sidebar + contenu */
+            height: 100vh;
+            overflow: hidden;
+        }
+        .page-wrapper {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .sidebar-header .app-name {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            border-radius: 7px;
+            margin-bottom: 6px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sidebar-nav li a i {
+            margin-right: 15px;
+            font-size: 1.1em;
+            width: 20px;
+            text-align: center;
+        }
+        .sidebar-nav li a:hover {
+            background-color: var(--active-nav-bg);
+            color: var(--active-nav-text);
+        }
+        .sidebar-nav li.active a {
+            background-color: var(--active-nav-bg);
+            color: var(--active-nav-text);
+            font-weight: 600;
+            position: relative;
+        }
+        /* Indicateur actif optionnel */
+        .sidebar-nav li.active a::before {
+            content: '';
+            position: absolute;
+            left: 0; /* Ajustez si padding différent */
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: var(--active-nav-border);
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .main-content {
+            flex-grow: 1; /* Prend le reste de la place */
+            overflow-y: auto;
+            padding: 0; /* Le padding sera dans les templates enfants */
+        }
+
+        /* Simple header pour le contenu principal */
+        .content-header {
+            background-color: #fff; /* Ou var(--sidebar-bg) */
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .content-header h1 {
+            font-size: 1.5em;
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .user-actions-top a, .user-actions-top button {
+            font-size: 1.2em;
+            margin-left: 18px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            background: none; border: none; padding: 0; cursor: pointer;
+        }
+         .user-actions-top a:hover, .user-actions-top button:hover { color: var(--accent-primary); }
+
+    </style>
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <div class="page-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="app-name">GESTCAB</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    {# Tableau de Bord Principal #}
+                    {% if user.is_authenticated %}
+                    <li class="{% if request.resolver_match.view_name == 'gestion_clinique:user_dashboard_redirect' %}active{% endif %}">
+                        <a href="{% url 'gestion_clinique:user_dashboard_redirect' %}">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de Bord
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {# Gestion des Patients #}
+                    {% if perms.gestion_clinique.view_patient %} {# Adaptez l'app_label et la permission #}
+                    <li class="{% if request.resolver_match.view_name == 'gestion_clinique:patient_list' %}active{% endif %}">
+                        <a href="{% url 'gestion_clinique:patient_list' %}">
+                            <i class="fas fa-users"></i> Patients
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {# Gestion des Consultations #}
+                    {% if perms.gestion_clinique.view_consultation %} {# Adaptez l'app_label et la permission #}
+                    <li class="{% if request.resolver_match.view_name == 'gestion_clinique:consultation_list' %}active{% endif %}">
+                        <a href="{% url 'gestion_clinique:consultation_list' %}">
+                            <i class="fas fa-file-medical-alt"></i> Consultations
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {# Gestion de la Facturation #}
+                    {% if perms.facturation.view_facture %} {# Suppose une app 'facturation' et un modèle 'Facture' #}
+                    <li class="{% if request.resolver_match.app_name == 'facturation' %}active{% endif %}">
+                        <a href="#"> {# URL à définir, ex: {% url 'facturation:facture_list' %} #}
+                            <i class="fas fa-file-invoice-dollar"></i> Facturation
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {# Gestion des Médecins (si admin/secrétaire peut les voir) #}
+                    {% if perms.medecins.view_medecin %}
+                    <li class="{% if request.resolver_match.app_name == 'medecins' and request.resolver_match.url_name == 'list_all_medecins' %}active{% endif %}">
+                        <a href="#"> {# URL à définir, ex: {% url 'medecins:list_all_medecins' %} #}
+                            <i class="fas fa-user-md"></i> Médecins
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {# Gestion des Actes Médicaux #}
+                    {% if perms.gestion_clinique.view_acte %} {# Adaptez l'app_label et la permission #}
+                    <li class="{% if request.resolver_match.view_name == 'gestion_clinique:medical_act_list' %}active{% endif %}">
+                        <a href="{% url 'gestion_clinique:medical_act_list' %}">
+                            <i class="fas fa-briefcase-medical"></i> Actes Médicaux
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {# Gestion des Médicaments #}
+                    {% if perms.gestion_clinique.view_medicament %} {# Adaptez l'app_label et la permission #}
+                    <li class="{% if request.resolver_match.view_name == 'gestion_clinique:medication_list' %}active{% endif %}">
+                        <a href="{% url 'gestion_clinique:medication_list' %}">
+                            <i class="fas fa-pills"></i> Médicaments
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {# Gestion des Secrétaires (si admin peut les voir/gérer) #}
+                    {% if perms.secretaires.view_secretaire %}
+                    <li class="{% if request.resolver_match.app_name == 'secretaires' and request.resolver_match.url_name == 'list_all_secretaires' %}active{% endif %}">
+                        <a href="#"> {# URL à définir, ex: {% url 'secretaires:list_all_secretaires' %} #}
+                            <i class="fas fa-user-tie"></i> Secrétaires
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {# Profil Utilisateur #}
+                     {% if user.is_authenticated %}
+                    <li class="{% if request.resolver_match.view_name == 'gestion_clinique:user_profile' %}active{% endif %}">
+                        <a href="{% url 'gestion_clinique:user_profile' %}">
+                            <i class="fas fa-user-edit"></i> Mon Profil
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <h1>{% block page_title_header %}Tableau de Bord{% endblock %}</h1>
+                <div class="user-actions-top">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'gestion_clinique:user_profile' %}" title="Profil {{ user.username }}"><i class="fas fa-user-circle"></i></a>
+                        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" title="Se déconnecter">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" title="Se connecter"><i class="fas fa-sign-in-alt"></i></a>
+                    {% endif %}
+                </div>
+            </header>
+            <div class="page-content-area" style="padding: 25px;"> {# Ajout d'un wrapper avec padding pour le contenu réel #}
+                {% block content %}
+                <!-- Le contenu spécifique à la page ira ici -->
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+    {% block body_scripts %}{% endblock %}
+</body>
+</html>

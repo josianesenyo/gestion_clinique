@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %} {# Pour formater les dates, à ajouter à INSTALLED_APPS si pas déjà fait: 'django.contrib.humanize' #}
+
+{% block title %}Liste des Patients - GESTCAB{% endblock %}
+
+{% block page_title_header %}Gestion des Patients{% endblock %}
+
+{% block head_extra %}
+<style>
+    .table-actions a, .table-actions button {
+        margin-right: 8px;
+        text-decoration: none;
+        padding: 5px 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        border: none;
+        cursor: pointer;
+    }
+    .table-actions .btn-view { background-color: var(--accent-primary); color: white; }
+    .table-actions .btn-edit { background-color: #ffc107; color: black; }
+    .table-actions .btn-consultation { background-color: #28a745; color: white; }
+    .table-actions .btn-delete { background-color: #dc3545; color: white; } /* Pour une future action de suppression */
+
+    .table-responsive {
+        overflow-x: auto;
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+    th {
+        background-color: var(--sidebar-bg);
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    tbody tr:hover {
+        background-color: #f1f5f9;
+    }
+    .no-patients {
+        text-align: center;
+        padding: 20px;
+        font-style: italic;
+    }
+    .action-buttons-header {
+        margin-bottom: 20px;
+        text-align: right;
+    }
+    .action-buttons-header .btn-add {
+        background-color: var(--accent-primary);
+        color: white;
+        padding: 10px 15px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: 500;
+    }
+    .action-buttons-header .btn-add i {
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="padding: 25px;">
+    <div class="action-buttons-header">
+        {% if perms.gestion_clinique.add_patient %} {# Ou perms.patients.add_patient si Patient est dans app 'patients' #}
+            <a href=" {% url 'patient_add' %}" class="btn-add"> {# Remplacez '#' par {% url 'patient_add' %} #}
+                <i class="fas fa-user-plus"></i> Ajouter un Patient
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="table-responsive">
+        {% if patients %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Date de Naissance</th>
+                        <th>Téléphone</th>
+                        <th>Dernière Visite</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr>
+                        <td>{{ patient.code|default:"N/A" }}</td>
+                        <td>{{ patient.nom }}</td>
+                        <td>{{ patient.prenom }}</td>
+                        <td>{{ patient.date_naissance|date:"d/m/Y"|default:"N/A" }}</td>
+                        <td>{{ patient.telephone|default:"N/A" }}</td>
+                        <td>{{ patient.derniere_visite_date|date:"d/m/Y"|default:"-" }}</td> {# Supposant que cet attribut existe #}
+                        <td class="table-actions">
+                            {% if perms.gestion_clinique.view_patient %}
+                                <a href="{% url 'patient_detail' patient.pk %}" class="btn-view" title="Voir Dossier">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            {% endif %}
+                            {% if perms.gestion_clinique.change_patient %}
+                                <a href="{% url 'patient_edit' patient.pk %}" class="btn-edit" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            {% endif %}
+                            {% if perms.gestion_clinique.add_consultation %} {# Ou la permission spécifique #}
+                                <a href="{% url 'consultation_add_for_patient' patient.pk %}" class="btn-consultation" title="Nouvelle Consultation">
+                                    <i class="fas fa-notes-medical"></i>
+                                </a>
+                            {% endif %}
+                            {% if perms.gestion_clinique.delete_patient %}
+                                <form action="{% url 'patient_delete' patient.pk %}" method="POST" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement le patient {{ patient.prenom }} {{ patient.nom }} ? Cette action est irréversible.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-delete" title="Supprimer Patient">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+
+
+
+
+
+                            
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-patients">Aucun patient trouvé.</p>
+        {% endif %}
+    </div>
+
+    {# Pagination (si vous l'implémentez) #}
+    {# {% if is_paginated %}
+        <div class="pagination" style="margin-top: 20px; text-align: center;">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">« première</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">précédente</a>
+                {% endif %}
+
+                <span class="current-page">
+                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">suivante</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">dernière »</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %} #}
+</div>
+{% endblock %}

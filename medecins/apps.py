@@ -1,0 +1,9 @@
+from django.apps import AppConfig
+
+
+class MedecinsConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'medecins'
+
+    def ready(self):
+        import medecins.signals

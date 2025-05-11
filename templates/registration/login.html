@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6; /* Un gris très clair pour le fond */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px; /* Espace pour les petits écrans */
+            box-sizing: border-box;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px; /* Limite la largeur du conteneur */
+            text-align: center;
+        }
+
+        .login-container h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px; /* Taille de police plus grande pour le titre */
+            font-weight: 600; /* Un peu plus gras */
+        }
+
+        /* Styles pour les paragraphes générés par form.as_p */
+        .login-container form p {
+            margin-bottom: 20px;
+            text-align: left; /* Aligner le texte des labels à gauche */
+        }
+
+        .login-container form label {
+            display: block; /* Fait en sorte que le label prenne toute la largeur */
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .login-container form input[type="text"],
+        .login-container form input[type="password"],
+        .login-container form input[type="email"] { /* Ajoutez d'autres types si nécessaire */
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Important pour que padding ne dépasse pas la largeur */
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .login-container form input[type="text"]:focus,
+        .login-container form input[type="password"]:focus,
+        .login-container form input[type="email"]:focus {
+            border-color: #007bff; /* Une couleur d'accentuation au focus */
+            outline: none; /* Supprime l'outline par défaut */
+        }
+
+        .login-container button[type="submit"] {
+            background-color: #007bff; /* Couleur primaire bleue */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            width: 100%; /* Bouton pleine largeur */
+            margin-top: 10px; /* Espace au-dessus du bouton */
+        }
+
+        .login-container button[type="submit"]:hover {
+            background-color: #0056b3; /* Bleu plus foncé au survol */
+        }
+
+        /* Style pour les messages d'erreur de champ (si Django les ajoute dans le <p>) */
+        .login-container form .errorlist {
+            list-style-type: none;
+            padding: 0;
+            margin: -10px 0 15px 0;
+            color: #dc3545; /* Rouge pour les erreurs */
+            font-size: 0.9em;
+        }
+        .login-container form .errorlist li {
+            padding: 2px 0;
+        }
+
+        /* Optionnel: lien pour mot de passe oublié ou inscription */
+        .extra-links {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .extra-links a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .extra-links a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Connexion</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Se connecter</button>
+        </form>
+        <!-- Optionnel: Liens supplémentaires -->
+        <div class="extra-links">
+            <a href="#">Mot de passe oublié ?</a> | <a href="#">Créer un compte</a>
+        </div>
+    </div>
+
+</body>
+</html>
